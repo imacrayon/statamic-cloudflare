@@ -122,12 +122,14 @@ class CloudflareCacher extends AbstractCacher
 
     private function invalidateZoneUrls(array $urls)
     {
-        Cloudflare::zones()->each(function ($zone) use ($urls) {
-            if (Cloudflare::shouldQueue()) {
-                PurgeZoneUrls::dispatch($zone, $urls);
-            } else {
-                PurgeZoneUrls::dispatchSync($zone, $urls);
-            }
-        });
+        foreach(array_chunk($urls, 30) as $chunk) {
+            Cloudflare::zones()->each(function ($zone) use ($chunk) {
+                if (Cloudflare::shouldQueue()) {
+                    PurgeZoneUrls::dispatch($zone, $chunk);
+                } else {
+                    PurgeZoneUrls::dispatchSync($zone, $chunk);
+                }
+            });
+        }
     }
 }
