@@ -35,24 +35,6 @@ class PurgeZoneUrls implements ShouldQueue
      */
     public function handle()
     {
-        $domain = Cloudflare::zones()->flip()->get($this->zone);
-
-        // Strip www. from domain.
-        $domain = Modify::value($domain)
-            ->removeLeft('www.')
-            ->__toString();
-
-        $urls = [];
-
-        foreach ($this->urls as $url) {
-            $urls[] = "http://{$domain}{$url}";
-            $urls[] = "https://{$domain}{$url}";
-
-            // Add www. to url.
-            $urls[] = "http://www.{$domain}{$url}";
-            $urls[] = "https://www.{$domain}{$url}";
-        }
-
-        Cloudflare::Api()->Zones()->cachePurge($this->zone, $urls);
+        Cloudflare::Api()->Zones()->cachePurge($this->zone, $this->urls);
     }
 }
